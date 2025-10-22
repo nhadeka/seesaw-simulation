@@ -1,0 +1,50 @@
+.main-container {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #e2e2e2;
+}
+
+.seesaw-container {
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+}
+
+#pivot {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    background-color: #000000;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    transform: translateX(-50%);
+}
+
+#seesaw {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 20px;
+    background-color: #532a04;
+    border-radius: 5px;
+}
+
+.ball {
+    position: absolute;
+    bottom: 20px;
+    border-radius: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+}
+

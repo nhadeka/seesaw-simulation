@@ -6,8 +6,11 @@ function init() {
     const maxWeight = 10;
     const minRGB = 0;
     const maxRGB = 255;
+    const torques = { totalLeftTorque: 0, totalRightTorque: 0 }; 
     const maxAngle = 30;
-    const torques = { totalLeftTorque: 0, totalRightTorque: 0 };
+    const ballsData = [];
+    const seesawStorageKey = 'seesaw-storage';
+    // const torqueThreshold = 4000;
 
     const getRandomInt = (min, max) => {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -21,8 +24,7 @@ function init() {
         return `rgb(${r}, ${g}, ${b})`;
     };
 
-    const createBall = (ballInfo) => {
-        const { styleObj, weight } = ballInfo;
+    const createBall = (styleObj, weight) => {
         const ball = document.createElement('div');
 
         ball.classList.add('ball');
@@ -58,7 +60,20 @@ function init() {
         console.log('angle new ', angle);
 
         seesaw.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-    };
+    }
+
+    const seesawRawData = localStorage.getItem(seesawStorageKey);
+
+    if (seesawRawData) {
+        const seesawParsedData = JSON.parse(seesawRawData);
+
+        seesawParsedData.balls.forEach(ball => {
+            createBall(ball.style, ball.ballTorqueInfo.weight);
+            calculateTorques(ball.ballTorqueInfo);
+        });
+
+        calculateAngle();     
+    }
 
     seesaw.addEventListener('click', function (event) {
         if (event.target === event.currentTarget) {
@@ -68,8 +83,6 @@ function init() {
             const distanceFromSeesawCenter = Math.abs(event.clientX - seesawCenterX);
 
             if (event.clientX === seesawCenterX) {
-                console.log('clicked center');
-
                 return;
             }
 
@@ -86,20 +99,23 @@ function init() {
                 left:`${left}px`,
             };
 
-            if (event.clientX < seesawCenterX) {
-                side = 'left';                  
-            } else {
-                side = 'right';   
-            }
+            side = event.clientX < seesawCenterX ? 'left' : 'right';
 
-            const ballInfoObj = { styleObj, weight};
             const ballTorqueInfo = { side, weight, distanceFromSeesawCenter };
+            const ballInfoObj = { style: styleObj, ballTorqueInfo: ballTorqueInfo };
 
-            console.log('ball info = ', ballInfoObj);
-
-            createBall(ballInfoObj);
+            createBall(styleObj,weight);
             calculateTorques(ballTorqueInfo);
             calculateAngle();
+
+            console.log(ballInfoObj);
+
+            ballsData.push(ballInfoObj);
+
+            console.log('data ',ballsData);
+
+            localStorage.setItem(seesawStorageKey, JSON.stringify({ balls: ballsData }));
+
         }
     });
 }

@@ -1,11 +1,12 @@
 function init() {
     const seesaw = document.getElementById('seesaw');
-    const baseSize = 40;
-    const weightMultiplier = 4;
+    const baseSize = 30;
+    const weightMultiplier = 2;
     const minWeight = 1;
     const maxWeight = 10;
     const minRGB = 0;
     const maxRGB = 255;
+    const torques = { totalLeftTorque: 0, totalRightTorque: 0 };
 
     const getRandomInt = (min, max) => {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -20,7 +21,7 @@ function init() {
     };
 
     const createBall = (ballInfo) => {
-        const { styleObj, side, weight } = ballInfo;
+        const { styleObj, weight } = ballInfo;
         const ball = document.createElement('div');
 
         ball.classList.add('ball');
@@ -29,8 +30,8 @@ function init() {
             ball.style[prop] = styleObj[prop];
         }
 
-        ball.dataset.side = side;
-        ball.dataset.weight = weight;
+       // ball.dataset.side = side;
+       // ball.dataset.weight = weight;
 
         const weightLabel = document.createElement('span');
 
@@ -40,34 +41,26 @@ function init() {
         seesaw.append(ball);
     };
 
-    const calculateWeights = () => {
-        let totalLeftWeight = 0;
-        let totalRightWeight = 0;
-        const balls = document.querySelectorAll('.ball');
+    const calculateTorques = (ballTorqueInfo) => {
+        const { side, weight, distanceFromSeesawCenter } = ballTorqueInfo;
 
-        balls.forEach(ball => {
-            const side = ball.dataset.side;
-            const weight = parseInt(ball.dataset.weight);
+        if (side === 'left') {
+            torques.totalLeftTorque += weight * distanceFromSeesawCenter;
+        }
 
-            if (side === 'left') {
-                totalLeftWeight += weight;
-            }
-
-            if (side === 'right') {
-                totalRightWeight += weight;
-            }
-        });
-
-        console.log(`total left weight = ${totalLeftWeight},total right weight = ${totalRightWeight}`);
+        if (side === 'right') {
+            torques.totalRightTorque += weight * distanceFromSeesawCenter;
+        }
     };
 
     seesaw.addEventListener('click', function (event) {
         if (event.target === event.currentTarget) {
             const seesawRect = seesaw.getBoundingClientRect();
             const clickXOnSeesaw = event.clientX - seesawRect.x;
-            const seesawCenterX = seesawRect.width / 2;
+            const seesawCenterX = seesawRect.x + seesawRect.width / 2;
+            const distanceFromSeesawCenter = Math.abs(event.clientX - seesawCenterX);
 
-            if (clickXOnSeesaw === seesawCenterX) {
+            if (event.clientX === seesawCenterX) {
                 console.log('clicked center');
 
                 return;
@@ -76,29 +69,30 @@ function init() {
             let side;
             const weight = getRandomInt(minWeight, maxWeight);
             const size = baseSize + weight * weightMultiplier;
+            const ballRadius = size / 2;
+            const left = clickXOnSeesaw - ballRadius;
             const styleObj = {
                 width: `${size}px`,
                 height: `${size}px`,
                 backgroundColor: `${getRandomRGBColor()}`,
+                left:`${left}px`,
             };
-            const ballRadius = size / 2;
 
-            if (clickXOnSeesaw < seesawCenterX) {
+            if (event.clientX < seesawCenterX) {
                 side = 'left';
-                styleObj[side] = `${clickXOnSeesaw - ballRadius}px`;                
             } else {
                 side = 'right';
-                styleObj[side] = `${seesawRect.width - clickXOnSeesaw - ballRadius}px`;
             }
 
-            const ballInfoObj = { styleObj, side, weight };
+            const ballInfoObj = { styleObj, weight};
+            const ballTorqueInfo = { side, weight, distanceFromSeesawCenter };
 
-            console.log('ball info =', ballInfoObj);
+            console.log('ball info = ', ballInfoObj);
 
             createBall(ballInfoObj);
-            calculateWeights();
+            calculateTorques(ballTorqueInfo);
         }
     });
 }
 
-document.addEventListener('DOMContentLoaded',init);
+document.addEventListener('DOMContentLoaded', init);

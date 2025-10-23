@@ -6,6 +6,7 @@ function init() {
     const maxWeight = 10;
     const minRGB = 0;
     const maxRGB = 255;
+    const maxAngle = 30;
     const torques = { totalLeftTorque: 0, totalRightTorque: 0 };
 
     const getRandomInt = (min, max) => {
@@ -30,9 +31,6 @@ function init() {
             ball.style[prop] = styleObj[prop];
         }
 
-       // ball.dataset.side = side;
-       // ball.dataset.weight = weight;
-
         const weightLabel = document.createElement('span');
 
         weightLabel.textContent = weight;
@@ -46,11 +44,20 @@ function init() {
 
         if (side === 'left') {
             torques.totalLeftTorque += weight * distanceFromSeesawCenter;
-        }
-
-        if (side === 'right') {
+        } else {
             torques.totalRightTorque += weight * distanceFromSeesawCenter;
         }
+
+        console.log(`total left torque = ${torques.totalLeftTorque},total right torque = ${torques.totalRightTorque}`);
+    };
+
+    const calculateAngle = () => {
+        const torqueDiff = torques.totalRightTorque - torques.totalLeftTorque;
+        const angle = Math.max(-maxAngle, Math.min(maxAngle, (torqueDiff / 10)));
+
+        console.log('angle new ', angle);
+
+        seesaw.style.transform = `translateX(-50%) rotate(${angle}deg)`;
     };
 
     seesaw.addEventListener('click', function (event) {
@@ -71,6 +78,7 @@ function init() {
             const size = baseSize + weight * weightMultiplier;
             const ballRadius = size / 2;
             const left = clickXOnSeesaw - ballRadius;
+
             const styleObj = {
                 width: `${size}px`,
                 height: `${size}px`,
@@ -79,9 +87,9 @@ function init() {
             };
 
             if (event.clientX < seesawCenterX) {
-                side = 'left';
+                side = 'left';                  
             } else {
-                side = 'right';
+                side = 'right';   
             }
 
             const ballInfoObj = { styleObj, weight};
@@ -91,6 +99,7 @@ function init() {
 
             createBall(ballInfoObj);
             calculateTorques(ballTorqueInfo);
+            calculateAngle();
         }
     });
 }

@@ -35,6 +35,9 @@
     height: 20px;
     background-color: #532a04;
     border-radius: 5px;
+    transform-origin: center;
+    transform: translateX(-50%) rotate(0deg);
+    transition: transform 0.1s ease-in-out;
 }
 
 .ball {
@@ -47,4 +50,3 @@
     font-weight: bold;
     color: white;
 }
-

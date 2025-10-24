@@ -16,6 +16,7 @@ function init() {
     let torques = { totalLeftTorque: 0, totalRightTorque: 0 };
     let ballsData = [];
     let currentAngle = 0;
+    const distanceScale = 0.01;
 
     const getRandomInt = (min, max) => {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -54,58 +55,69 @@ function init() {
         const { side, weight, distanceFromSeesawCenter } = ballTorqueInfo;
 
         if (side === 'left') {
-            torques.totalLeftTorque += weight * distanceFromSeesawCenter;
+            torques.totalLeftTorque += weight * (distanceFromSeesawCenter * distanceScale);
         } else {
-            torques.totalRightTorque += weight * distanceFromSeesawCenter;
+            torques.totalRightTorque += weight * (distanceFromSeesawCenter * distanceScale);
         }
     };
 
     const calculateAngle = () => {
         const torqueDiff = torques.totalRightTorque - torques.totalLeftTorque;
 
-        currentAngle = Math.max(-maxAngle, Math.min(maxAngle, (torqueDiff / 10))).toFixed(2);
+        currentAngle = Math.max(-maxAngle, Math.min(maxAngle, (torqueDiff / 10)));
 
         updateAngle();
     };
 
     const updateAngle = () => {
         seesaw.style.transform = `translateX(-50%) rotate(${currentAngle}deg)`;
-    }; 
+    };
 
     const setDataToStorage = () => {
-        const data = { ballsData, torques };
+        const data = {
+            ballsData,
+            currentAngle: Number(currentAngle.toFixed(1)),
+            torques: {
+               totalLeftTorque: Number(torques.totalLeftTorque.toFixed(1)),
+               totalRightTorque: Number(torques.totalRightTorque.toFixed(1))
+            }
+        };
 
         localStorage.setItem(seesawStorageKey, JSON.stringify(data));
     };
 
+    const getDataFromStorage = () => localStorage.getItem(seesawStorageKey);
+
     const loadFromStorage = () => {
-        const seesawRawData = localStorage.getItem(seesawStorageKey);
+        const seesawRawData = getDataFromStorage();
 
-        if (seesawRawData) {
-            const seesawParsedData = JSON.parse(seesawRawData);
+        if (!seesawRawData) return;
 
-            ballsData = seesawParsedData.ballsData;
+        const seesawParsedData = JSON.parse(seesawRawData);
+        const { ballsData: storedBallsData, currentAngle: storedAngle, torques: storedTorques } = seesawParsedData;
 
-            seesawParsedData.ballsData.forEach(ball => {
-                createBall(ball.style, ball.weight);
-            });
+        ballsData = storedBallsData;
+        currentAngle = storedAngle;
+        torques = storedTorques;
 
-            torques = seesawParsedData.torques;
+        ballsData.forEach(ball => {
+            createBall(ball.style, ball.weight);
+        });
 
-            calculateAngle();
-        }
+        updateAngle();
+        updateDisplay();
     };
 
     const clearStorage = () => {
         localStorage.removeItem(seesawStorageKey);
     };
 
-    const displayInfos = () => {
-        rightWeightValue.innerText = torques.totalRightTorque.toFixed(2);
-        leftWeightValue.innerText = torques.totalLeftTorque.toFixed(2);
-        netWeightValue.innerText = Math.abs((torques.totalRightTorque - torques.totalLeftTorque)).toFixed(2);
-        angleValue.innerText = Math.abs(currentAngle);
-    }; 
+    const updateDisplay = () => {
+        rightWeightValue.innerText = `${torques.totalRightTorque.toFixed(1)} kg`;
+        leftWeightValue.innerText = `${torques.totalLeftTorque.toFixed(1)} kg`;
+        netWeightValue.innerText = `${Math.abs(torques.totalRightTorque - torques.totalLeftTorque).toFixed(1)} kg`;
+        angleValue.innerHTML = `${currentAngle.toFixed(1)}&deg;`;
+    };
 
     const resetSeesaw = () => {
         ballsData = [];
@@ -114,12 +126,11 @@ function init() {
         seesaw.innerHTML = '';
 
         updateAngle();
-        displayInfos();
+        updateDisplay();
         clearStorage();
     };
 
     loadFromStorage();
-    displayInfos();
 
     seesaw.addEventListener('click', (event) => {
         const { target, currentTarget, clientX } = event;
@@ -154,7 +165,7 @@ function init() {
             createBall(styleObj,weight);
             calculateTorques(ballTorqueInfo);
             calculateAngle();
-            displayInfos();
+            updateDisplay();
 
             ballsData.push(ballInfoObj);
 

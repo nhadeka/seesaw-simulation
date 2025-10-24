@@ -7,11 +7,33 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div class="main-container">
-            <div class="seesaw-container">
-                <div id="seesaw">
+        <div class="main-container flex-center">
+            <div class="game-container flex-center">
+                <div class="info-wrapper">
+                    <div class="info">
+                        <label>LEFT WEIGHT</label>
+                        <div id="left-weight">0</div>
+                    </div>
+                    <div class="info">
+                        <label>NET WEIGHT</label>
+                        <div id="net-weight">0</div>
+                    </div>
+                    <div class="info">
+                        <label>RIGHT WEIGHT</label>
+                        <div id="right-weight">0</div>
+                    </div>
+                    <div class="info">
+                        <label>ANGLE</label>
+                        <div id="angle">0</div>
+                    </div>
                 </div>
-                <div id="pivot"></div>
+                <div class="seesaw-container flex-center">
+                    <div id="seesaw"></div>
+                    <div id="pivot"></div>
+                </div>
+                <div class="button-wrapper">
+                    <button id="reset-button">Reset</button>
+                </div>
             </div>
         </div>
         <script src="script.js"></script>
